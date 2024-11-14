@@ -4,19 +4,15 @@ using System.Collections.Generic;
 
 public class Platform : MonoBehaviour
 {
-    public GameObject[] platforms;
+    [SerializeField] private GameObject[] platforms;
 
-    void Start()
+    private void Start()
     {
         foreach (GameObject platform in platforms)
         {
             if (platform != null)
             {
                 platform.tag = "Platform";
-            }
-            else
-            {
-                Debug.Log("Платформа не инициализирована в массиве platforms.");
             }
         }
     }

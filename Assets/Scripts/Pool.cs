@@ -15,6 +15,12 @@ public class Pool : MonoBehaviour
         for (int i = 0; i < poolSize; i++)
         {
             GameObject cube = Instantiate(cubePrefab);
+            
+            if (cube.TryGetComponent(out Cube cubeScript))
+            {
+                cubeScript.SetPool(this);
+            }
+            
             cube.SetActive(false);
             poolQueue.Enqueue(cube);
         }
@@ -31,6 +37,11 @@ public class Pool : MonoBehaviour
         else
         {
             GameObject cube = Instantiate(cubePrefab);
+            
+            if (cube.TryGetComponent(out Cube cubeScript))
+            {
+                cubeScript.SetPool(this);
+            }
             return cube;
         }
     }

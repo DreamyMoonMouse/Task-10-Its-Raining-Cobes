@@ -8,16 +8,21 @@ public class Cube : MonoBehaviour
     private bool hasCollided = false;
     private Renderer cubeRenderer;
     private Color defaultColor;
-
-    void Start()
+    private Pool pool;
+    
+    private void Start()
     {
         cubeRenderer = GetComponent<Renderer>();
         defaultColor = cubeRenderer.sharedMaterial.color;
     }
-
-    void OnCollisionEnter(Collision collision)
+    
+    public void SetPool(Pool pool)
     {
-        if ((collision.gameObject.CompareTag("Platform") || collision.gameObject.CompareTag("TiltedPlatform")) && !hasCollided)
+        this.pool = pool;
+    }
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Platform") && !hasCollided)
         {
             hasCollided = true;
             ChangeColor();
@@ -25,7 +30,7 @@ public class Cube : MonoBehaviour
         }
     }
 
-    void ChangeColor()
+    private void ChangeColor()
     {
         cubeRenderer.material.color = Random.ColorHSV();
     }
@@ -37,10 +42,10 @@ public class Cube : MonoBehaviour
         ResetCube();
     }
 
-    void ResetCube()
+    private void ResetCube()
     {
         cubeRenderer.material.color = defaultColor;
         hasCollided = false;
-        gameObject.SetActive(false);
+        pool.ReturnObject(gameObject);
     }
 }
