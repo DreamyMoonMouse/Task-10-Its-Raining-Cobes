@@ -22,19 +22,21 @@ public class Spawner : MonoBehaviour
          else
          {
              Debug.LogError("Основная платформа не назначена или у неё отсутствует BoxCollider.");
+             
              return;
          }
          
          StartCoroutine(SpawnCubes());
      }
 
-     IEnumerator SpawnCubes()
+     private IEnumerator SpawnCubes()
      {
          bool isRunning = true;
          
          while (isRunning)
          {
              SpawnCube();
+             
              yield return new WaitForSeconds(spawnInterval);
          }
      }

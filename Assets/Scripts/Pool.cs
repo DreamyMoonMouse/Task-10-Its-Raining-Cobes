@@ -32,6 +32,7 @@ public class Pool : MonoBehaviour
         {
             GameObject cube = poolQueue.Dequeue();
             cube.SetActive(true);
+            
             return cube;
         }
         else
@@ -42,6 +43,7 @@ public class Pool : MonoBehaviour
             {
                 cubeScript.SetPool(this);
             }
+            
             return cube;
         }
     }

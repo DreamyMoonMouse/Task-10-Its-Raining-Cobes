@@ -5,24 +5,28 @@ using System.Collections.Generic;
 [RequireComponent(typeof(Renderer))]
 public class Cube : MonoBehaviour
 {
-    private bool hasCollided = false;
+    private bool hasCollided;
     private Renderer cubeRenderer;
     private Color defaultColor;
     private Pool pool;
     
+    private void Awake()
+    {
+      cubeRenderer = GetComponent<Renderer>();  
+    }
     private void Start()
     {
-        cubeRenderer = GetComponent<Renderer>();
-        defaultColor = cubeRenderer.sharedMaterial.color;
+       defaultColor = cubeRenderer.sharedMaterial.color; 
     }
     
     public void SetPool(Pool pool)
     {
         this.pool = pool;
     }
+    
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Platform") && !hasCollided)
+        if (collision.gameObject.GetComponent<PlatformMarker>() != null && hasCollided == false)
         {
             hasCollided = true;
             ChangeColor();
