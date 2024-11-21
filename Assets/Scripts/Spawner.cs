@@ -1,31 +1,27 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private Pool pool;
-    [SerializeField] private GameObject mainPlatform;
+    [SerializeField] private Cube _cubePrefab;
+    [SerializeField] private GameObject _mainPlatform;
     
-    private Vector3 spawnAreaMin;
-    private Vector3 spawnAreaMax;
-    private float spawnInterval = 0.3f;
-    private float spawnHeight = 10f;
+    private Pool<Cube> _pool;
+    private Vector3 _spawnAreaMin;
+    private Vector3 _spawnAreaMax;
+    private float _spawnInterval = 0.3f;
+    private float _spawnHeight = 10f;
+    private int _poolSize = 20;
 
     private void Start()
      {
-         if (mainPlatform != null && mainPlatform.TryGetComponent(out BoxCollider platformCollider))
+         if (_mainPlatform != null && _mainPlatform.TryGetComponent(out BoxCollider platformCollider))
          {
-             spawnAreaMin = platformCollider.bounds.min;
-             spawnAreaMax = platformCollider.bounds.max;
-         }
-         else
-         {
-             Debug.LogError("Основная платформа не назначена или у неё отсутствует BoxCollider.");
-             
-             return;
+             _spawnAreaMin = platformCollider.bounds.min;
+             _spawnAreaMax = platformCollider.bounds.max;
          }
          
+         _pool = new Pool<Cube>(_cubePrefab, _poolSize);
          StartCoroutine(SpawnCubes());
      }
 
@@ -36,19 +32,31 @@ public class Spawner : MonoBehaviour
          while (isRunning)
          {
              SpawnCube();
+             var wait = new WaitForSeconds(_spawnInterval);
              
-             yield return new WaitForSeconds(spawnInterval);
+             yield return wait;
          }
      }
 
      private void SpawnCube()
      {
-         Vector3 spawnPosition = new Vector3(
-             Random.Range(spawnAreaMin.x, spawnAreaMax.x),
-             spawnAreaMax.y + spawnHeight,
-             Random.Range(spawnAreaMin.z, spawnAreaMax.z)
+         Cube cube = _pool.GetObject();
+         cube.transform.position = GetRandomSpawnPosition();
+         cube.OnLifeEnded += HandleCubeLifeEnded;
+     }
+     
+     private void HandleCubeLifeEnded(Cube cube)
+     {
+         cube.OnLifeEnded -= HandleCubeLifeEnded; 
+         _pool.ReturnObject(cube); 
+     }
+
+     private Vector3 GetRandomSpawnPosition()
+     {
+         return new Vector3(
+             Random.Range(_spawnAreaMin.x, _spawnAreaMax.x),
+             _spawnAreaMax.y + _spawnHeight,
+             Random.Range(_spawnAreaMin.z, _spawnAreaMax.z)
          );
-             GameObject cube = pool.GetObject(); 
-             cube.transform.position = spawnPosition;
      }
 }

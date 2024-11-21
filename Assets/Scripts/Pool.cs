@@ -1,57 +1,43 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
-public class Pool : MonoBehaviour
+public class Pool<T> where T : Component
 {
-    [SerializeField] private GameObject cubePrefab;
+    private Queue<T> _poolQueue;
+    private T _prefab;
     
-    private int poolSize = 20;
-    private Queue<GameObject> poolQueue = new Queue<GameObject>();
-
-    
-    private void Awake()
+    public Pool(T prefab, int initialSize)
     {
-        for (int i = 0; i < poolSize; i++)
+        _prefab = prefab;
+        _poolQueue = new Queue<T>();
+
+        for (int i = 0; i < initialSize; i++)
         {
-            GameObject cube = Instantiate(cubePrefab);
-            
-            if (cube.TryGetComponent(out Cube cubeScript))
-            {
-                cubeScript.SetPool(this);
-            }
-            
-            cube.SetActive(false);
-            poolQueue.Enqueue(cube);
+            T instance = Object.Instantiate(prefab);
+            instance.gameObject.SetActive(false);
+            _poolQueue.Enqueue(instance);
         }
     }
-    
-    public GameObject GetObject()
+
+    public T GetObject()
     {
-        if (poolQueue.Count > 0)
+        if (_poolQueue.Count > 0)
         {
-            GameObject cube = poolQueue.Dequeue();
-            cube.SetActive(true);
-            
-            return cube;
+            T instance = _poolQueue.Dequeue();
+            instance.gameObject.SetActive(true);
+            return instance;
         }
         else
         {
-            GameObject cube = Instantiate(cubePrefab);
-            
-            if (cube.TryGetComponent(out Cube cubeScript))
-            {
-                cubeScript.SetPool(this);
-            }
-            
-            return cube;
+            T instance = Object.Instantiate(_prefab);
+            return instance;
         }
     }
-    
-    public void ReturnObject(GameObject cube)
+
+    public void ReturnObject(T instance)
     {
-        cube.SetActive(false); 
-        poolQueue.Enqueue(cube);
+        instance.gameObject.SetActive(false);
+        _poolQueue.Enqueue(instance);
     }
 }
 

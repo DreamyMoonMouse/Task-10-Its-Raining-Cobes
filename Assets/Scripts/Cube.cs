@@ -1,34 +1,31 @@
 using UnityEngine;
 using System.Collections;
-using System.Collections.Generic;
+using System;
 
 [RequireComponent(typeof(Renderer))]
 public class Cube : MonoBehaviour
 {
-    private bool hasCollided;
-    private Renderer cubeRenderer;
-    private Color defaultColor;
-    private Pool pool;
+    public event Action<Cube> OnLifeEnded;
+    
+    private bool _hasCollided;
+    private Renderer _cubeRenderer;
+    private Color _defaultColor;
     
     private void Awake()
     {
-      cubeRenderer = GetComponent<Renderer>();  
-    }
-    private void Start()
-    {
-       defaultColor = cubeRenderer.sharedMaterial.color; 
+      _cubeRenderer = GetComponent<Renderer>();  
     }
     
-    public void SetPool(Pool pool)
+    private void Start()
     {
-        this.pool = pool;
+       _defaultColor = _cubeRenderer.sharedMaterial.color; 
     }
     
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.GetComponent<PlatformMarker>() != null && hasCollided == false)
+        if (_hasCollided == false && collision.gameObject.GetComponent<PlatformMarker>() != null )
         {
-            hasCollided = true;
+            _hasCollided = true;
             ChangeColor();
             StartCoroutine(StartLifeCountdown());
         }
@@ -36,20 +33,21 @@ public class Cube : MonoBehaviour
 
     private void ChangeColor()
     {
-        cubeRenderer.material.color = Random.ColorHSV();
+        _cubeRenderer.material.color = UnityEngine.Random.ColorHSV();
     }
 
-    IEnumerator StartLifeCountdown()
+    private IEnumerator StartLifeCountdown()
     {
-        float lifetime = Random.Range(2f, 5f);
+        float lifetime = UnityEngine.Random.Range(2f, 5f);
+        
         yield return new WaitForSeconds(lifetime);
         ResetCube();
     }
 
     private void ResetCube()
     {
-        cubeRenderer.material.color = defaultColor;
-        hasCollided = false;
-        pool.ReturnObject(gameObject);
+        _cubeRenderer.material.color = _defaultColor;
+        _hasCollided = false;
+        OnLifeEnded?.Invoke(this);
     }
 }
