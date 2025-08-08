@@ -12,6 +12,7 @@ public class BombSpawner : Spawner<Bomb>
     public void SpawnAt(Vector3 position)
     {
         Bomb bomb = _pool.GetObject();
+        bomb.ResetState();
         bomb.transform.position = position;
         bomb.Initialize(_minLifetime, _maxLifetime);
         bomb.StartFadeAndExplode();
@@ -20,7 +21,7 @@ public class BombSpawner : Spawner<Bomb>
 
     protected override void Created(Bomb bomb)
     {
-        bomb.ExplosionFinished += () => ReturnToPool(bomb);
+        bomb.ExplosionFinished += OnBombExplosionFinished;
     }
     
     protected override IEnumerator SpawnRoutine()
@@ -28,9 +29,10 @@ public class BombSpawner : Spawner<Bomb>
         yield break;
     }
     
-    private void ReturnToPool(Bomb bomb)
+    private void OnBombExplosionFinished(Bomb bomb)
     {
-        bomb.ExplosionFinished -= () => ReturnToPool(bomb);
+        bomb.ExplosionFinished -= OnBombExplosionFinished;
+
         _pool.ReturnObject(bomb);
     }
 }
