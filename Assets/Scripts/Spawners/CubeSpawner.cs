@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class CubeSpawner : Spawner<Cube>
 {
@@ -6,23 +7,39 @@ public class CubeSpawner : Spawner<Cube>
     
     protected override void Start()
     {
-        _objectName = "Кубы";
+        ObjectNameValue = "Кубы";
         base.Start();
+        StartCoroutine(SpawnRoutine());
     }
     
     protected override void Created(Cube cubeInstance)
     {
         base.Created(cubeInstance);
-        cubeInstance.Initialize(_minLifetime, _maxLifetime);
+        cubeInstance.Initialize(MinLifetime, MaxLifetime);
         cubeInstance.LifeEnded += CubeLifeEnded;
         cubeInstance.BombRequested += OnBombRequested;
+    }
+    
+    protected override IEnumerator SpawnRoutine()
+    {
+        bool isRunning = true;
+        
+        while (isRunning)
+        {
+            var cube = Pool.GetObject();
+            cube.transform.position = GetRandomPosition();
+            TotalSpawnedCountValue++;
+            NotifyStatsChanged();
+            
+            yield return new WaitForSeconds(SpawnInterval);
+        }
     }
     
     private void CubeLifeEnded(Cube cube)
     {
         cube.LifeEnded -= CubeLifeEnded;
-        cube.BombRequested -= OnBombRequested;
-        _pool.ReturnObject(cube);
+        _bombSpawner.SpawnAt(cube.transform.position); 
+        Pool.ReturnObject(cube);
     }
     
     private void OnBombRequested(Vector3 position)

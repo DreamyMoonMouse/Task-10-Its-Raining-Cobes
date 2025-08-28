@@ -3,29 +3,29 @@ using System.Collections;
 
 public class Spawner<T> : MonoBehaviour, ISpawnerStats where T : Component
 {
-    [SerializeField] protected T _prefab;
-    [SerializeField] protected Transform _spawnArea;
-    [SerializeField] protected int _initialPoolSize = 10;
-    [SerializeField] protected float _spawnInterval = 1f;
-    [SerializeField] protected SpawnerStatsUI _statsUI; 
-    [SerializeField] protected float _spawnHeightAboveArea = 5f;
-    [SerializeField] protected float _minLifetime = 2f;
-    [SerializeField] protected float _maxLifetime = 5f;
+    [SerializeField] protected T Prefab;
+    [SerializeField] protected Transform SpawnArea;
+    [SerializeField] protected int InitialPoolSize = 10;
+    [SerializeField] protected float SpawnInterval = 1f;
+    [SerializeField] protected SpawnerStatsUI StatsUI; 
+    [SerializeField] protected float SpawnHeightAboveArea = 5f;
+    [SerializeField] protected float MinLifetime = 2f;
+    [SerializeField] protected float MaxLifetime = 5f;
 
-    protected string _objectName = "Объект";
-    protected Pool<T> _pool;
-    protected int _totalSpawnedCount;
+    protected string ObjectNameValue = "Объект";
+    protected Pool<T> Pool;
+    protected int TotalSpawnedCountValue;
 
-    public int TotalSpawnedCount => _totalSpawnedCount;
-    public int CreatedCount => _pool != null ? _pool.TotalCreatedCount : 0; 
-    public int ActiveCount => _pool?.ActiveCount ?? 0;
-    public string ObjectName => _objectName;
+    public int TotalSpawnedCount => TotalSpawnedCountValue;
+    public int CreatedCount => Pool != null ? Pool.TotalCreatedCount : 0; 
+    public int ActiveCount => Pool?.ActiveCount ?? 0;
+    public string ObjectName => ObjectNameValue;
+    public event System.Action StatsChanged;
 
     protected virtual void Start()
      {
-         _pool = new Pool<T>(_prefab, _initialPoolSize, Created);
-         _statsUI.RegisterSpawner(this);
-         StartCoroutine(SpawnRoutine());
+         Pool = new Pool<T>(Prefab, InitialPoolSize, Created);
+         StatsUI.RegisterSpawner(this);
      }
     
     protected virtual void Created(T instance)
@@ -34,31 +34,27 @@ public class Spawner<T> : MonoBehaviour, ISpawnerStats where T : Component
 
     protected virtual IEnumerator SpawnRoutine()
     {
-        bool isRunning = true;
-         
-        while (isRunning)
-        {
-             var obj = _pool.GetObject();
-             obj.transform.position = GetRandomPosition();
-             _totalSpawnedCount++;
-             
-             yield return new WaitForSeconds(_spawnInterval);
-        }
+        yield break; 
     }
      
-     private Vector3 GetRandomPosition()
+    protected virtual Vector3 GetRandomPosition()
      {
-        if (_spawnArea.TryGetComponent(out BoxCollider box))
+        if (SpawnArea.TryGetComponent(out BoxCollider box))
         {
             Vector3 min = box.bounds.min;
             Vector3 max = box.bounds.max;
             return new Vector3(
                 Random.Range(min.x, max.x),
-                max.y + _spawnHeightAboveArea,
+                max.y + SpawnHeightAboveArea,
                 Random.Range(min.z, max.z)
             );
         }
         
         return Vector3.zero;
      }
+    
+    protected void NotifyStatsChanged()
+    {
+        StatsChanged?.Invoke();
+    }
 }

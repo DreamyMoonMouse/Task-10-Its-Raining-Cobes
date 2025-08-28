@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
-using System.Collections;
 
 public class SpawnerStatsUI : MonoBehaviour
 {
@@ -13,32 +12,29 @@ public class SpawnerStatsUI : MonoBehaviour
     public void RegisterSpawner(ISpawnerStats spawner)
     {
         _spawners.Add(spawner);
+        spawner.StatsChanged += UpdateStats;
+        UpdateStats();
+    }
+    
+    private void OnDestroy()
+    {
+        foreach (var spawner in _spawners)
+            spawner.StatsChanged -= UpdateStats;
     }
 
-    private void Start()
+    private void UpdateStats()
     {
-        StartCoroutine(UpdateStats());
-    }
+        var builder = new StringBuilder();
 
-    private IEnumerator UpdateStats()
-    {
-        bool enabled = true;
-        
-        while (enabled)
+        foreach (var spawner in _spawners)
         {
-            var builder = new StringBuilder();
-            
-            foreach (var spawner in _spawners)
-            {
-                builder.AppendLine($"<b>{spawner.ObjectName}</b>");
-                builder.AppendLine($"Заспавновано всего: {spawner.TotalSpawnedCount}");
-                builder.AppendLine($"Создано новых объектов: {spawner.CreatedCount}");
-                builder.AppendLine($"Активно объектов: {spawner.ActiveCount}");
-                builder.AppendLine();
-            }
-            
-            _statsText.text = builder.ToString();
-            yield return new WaitForSeconds(_updateInterval);
+            builder.AppendLine($"<b>{spawner.ObjectName}</b>");
+            builder.AppendLine($"Заспавновано всего: {spawner.TotalSpawnedCount}");
+            builder.AppendLine($"Создано новых объектов: {spawner.CreatedCount}");
+            builder.AppendLine($"Активно объектов: {spawner.ActiveCount}");
+            builder.AppendLine();
         }
+
+        _statsText.text = builder.ToString();
     }
 }

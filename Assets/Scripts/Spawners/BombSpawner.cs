@@ -5,18 +5,18 @@ public class BombSpawner : Spawner<Bomb>
 {
     protected override void Start()
     {
-        _objectName = "Бомбы";
+        ObjectNameValue = "Бомбы";
         base.Start();
     }
     
     public void SpawnAt(Vector3 position)
     {
-        Bomb bomb = _pool.GetObject();
+        Bomb bomb = Pool.GetObject();
         bomb.ResetState();
         bomb.transform.position = position;
-        bomb.Initialize(_minLifetime, _maxLifetime);
+        bomb.Initialize(MinLifetime, MaxLifetime);
         bomb.StartFadeAndExplode();
-        _totalSpawnedCount++;
+        TotalSpawnedCountValue++;
     }
 
     protected override void Created(Bomb bomb)
@@ -33,6 +33,6 @@ public class BombSpawner : Spawner<Bomb>
     {
         bomb.ExplosionFinished -= OnBombExplosionFinished;
 
-        _pool.ReturnObject(bomb);
+        Pool.ReturnObject(bomb);
     }
 }

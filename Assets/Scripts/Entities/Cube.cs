@@ -57,7 +57,6 @@ public class Cube : MonoBehaviour
     {
         _cubeRenderer.material.color = _defaultColor;
         _hasCollided = false;
-        BombRequested?.Invoke(transform.position);
         LifeEnded?.Invoke(this);
     }
 }
