@@ -3,34 +3,37 @@ using System.Collections;
 
 public class CubeSpawner : Spawner<Cube>
 {
+    [SerializeField] private CubeStatsUI _ui;
     [SerializeField] private BombSpawner _bombSpawner;
     
     protected override void Start()
     {
         ObjectNameValue = "Кубы";
         base.Start();
+        _ui.RegisterSpawner(this);
         StartCoroutine(SpawnRoutine());
     }
     
-    protected override void Created(Cube cubeInstance)
+    protected override void OnCreated(Cube cubeInstance)
     {
-        base.Created(cubeInstance);
+        base.OnCreated(cubeInstance);
         cubeInstance.Initialize(MinLifetime, MaxLifetime);
         cubeInstance.LifeEnded += CubeLifeEnded;
         cubeInstance.BombRequested += OnBombRequested;
     }
     
-    protected override IEnumerator SpawnRoutine()
+    private IEnumerator SpawnRoutine()
     {
-        bool isRunning = true;
+        bool isActive = true;
         
-        while (isRunning)
+        while (isActive)
         {
             var cube = Pool.GetObject();
             cube.transform.position = GetRandomPosition();
+            cube.Initialize(MinLifetime, MaxLifetime);
             TotalSpawnedCountValue++;
-            NotifyStatsChanged();
-            
+            OnSpawned();
+
             yield return new WaitForSeconds(SpawnInterval);
         }
     }
@@ -38,8 +41,9 @@ public class CubeSpawner : Spawner<Cube>
     private void CubeLifeEnded(Cube cube)
     {
         cube.LifeEnded -= CubeLifeEnded;
-        _bombSpawner.SpawnAt(cube.transform.position); 
+        cube.BombRequested -= OnBombRequested;
         Pool.ReturnObject(cube);
+        OnReturned();
     }
     
     private void OnBombRequested(Vector3 position)

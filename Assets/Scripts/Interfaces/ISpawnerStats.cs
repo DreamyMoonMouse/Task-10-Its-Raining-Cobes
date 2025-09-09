@@ -6,5 +6,8 @@ public interface ISpawnerStats
     int CreatedCount { get; }
     int ActiveCount { get; }
     string ObjectName { get; }
-    event Action StatsChanged;
+    
+    event Action Spawned;
+    event Action Created;
+    event Action Returned;
 }

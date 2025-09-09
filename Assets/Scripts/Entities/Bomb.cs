@@ -8,10 +8,10 @@ public class Bomb : MonoBehaviour
     private float _minLifetime;
     private float _maxLifetime ;
     private float _currentLifetime;
-    private float _explosionRadius = 3f;
     private Material _materialInstance;
     private Color _startColor; 
     private Coroutine _fadeRoutine;
+    private Exploder _exploder;
     
     public event Action<Bomb> ExplosionFinished;
 
@@ -22,7 +22,7 @@ public class Bomb : MonoBehaviour
         _startColor = Color.black;
         _startColor.a = 1.0f; 
         _materialInstance.color = _startColor;
-        _currentLifetime = 0f;
+        _exploder = GetComponent<Exploder>();
     }
     
     public void Initialize(float minDuration, float maxDuration)
@@ -94,14 +94,7 @@ public class Bomb : MonoBehaviour
 
     private void Explode()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, _explosionRadius);
-        
-        foreach (var hit in hits)
-        {
-            if (hit.attachedRigidbody != null && hit.attachedRigidbody != GetComponent<Rigidbody>())
-                hit.attachedRigidbody.AddExplosionForce(300f, transform.position, _explosionRadius);
-        }
-        
+        _exploder.Explode();
         ExplosionFinished?.Invoke(this);
     }
     

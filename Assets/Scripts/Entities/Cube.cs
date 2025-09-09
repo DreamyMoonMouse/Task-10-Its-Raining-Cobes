@@ -6,23 +6,17 @@ using System;
 public class Cube : MonoBehaviour
 {
     private bool _hasCollided;
-    private Renderer _cubeRenderer;
-    private Color _defaultColor;
     private float _minLifetime;
     private float _maxLifetime ;
     private float _currentLifetime;
+    private ColorChanger _colorChanger;
     
     public event Action<Cube> LifeEnded;
     public event Action<Vector3> BombRequested; 
 
     private void Awake()
     {
-        _cubeRenderer = GetComponent<Renderer>();  
-    }
-    
-    private void Start()
-    {
-        _defaultColor = _cubeRenderer.sharedMaterial.color; 
+        _colorChanger = GetComponent<ColorChanger>(); 
     }
     
     public void Initialize(float minLifetime, float maxLifetime)
@@ -36,15 +30,10 @@ public class Cube : MonoBehaviour
         if (_hasCollided == false && collision.gameObject.GetComponent<PlatformMarker>() != null )
         {
             _hasCollided = true;
-            ChangeColor();
+            _colorChanger.SetRandomColor();
             _currentLifetime = UnityEngine.Random.Range(_minLifetime, _maxLifetime);
             StartCoroutine(StartLifeCountdown());
         }
-    }
-
-    private void ChangeColor()
-    {
-        _cubeRenderer.material.color = UnityEngine.Random.ColorHSV();
     }
 
     private IEnumerator StartLifeCountdown()
@@ -55,8 +44,9 @@ public class Cube : MonoBehaviour
 
     private void ResetCube()
     {
-        _cubeRenderer.material.color = _defaultColor;
+        _colorChanger.ResetColor();
         _hasCollided = false;
+        BombRequested?.Invoke(transform.position);
         LifeEnded?.Invoke(this);
     }
 }

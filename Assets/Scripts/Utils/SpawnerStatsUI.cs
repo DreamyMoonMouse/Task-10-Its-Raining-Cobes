@@ -2,24 +2,33 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
 
-public class SpawnerStatsUI : MonoBehaviour
+public abstract class SpawnerStatsUI : MonoBehaviour
 {
     [SerializeField] private TMPro.TextMeshProUGUI _statsText;
-    [SerializeField] private float _updateInterval = 0.5f;
     
     private List<ISpawnerStats> _spawners = new();
 
     public void RegisterSpawner(ISpawnerStats spawner)
     {
+        if (spawner == null) return;
+
         _spawners.Add(spawner);
-        spawner.StatsChanged += UpdateStats;
+        spawner.Spawned += UpdateStats;
+        spawner.Created += UpdateStats;
+        spawner.Returned += UpdateStats;
         UpdateStats();
     }
+    
+    protected abstract void AppendSpawnerStats(StringBuilder builder, ISpawnerStats spawner);
     
     private void OnDestroy()
     {
         foreach (var spawner in _spawners)
-            spawner.StatsChanged -= UpdateStats;
+        {
+            spawner.Spawned -= UpdateStats;
+            spawner.Created -= UpdateStats;
+            spawner.Returned -= UpdateStats;
+        }
     }
 
     private void UpdateStats()
@@ -28,11 +37,7 @@ public class SpawnerStatsUI : MonoBehaviour
 
         foreach (var spawner in _spawners)
         {
-            builder.AppendLine($"<b>{spawner.ObjectName}</b>");
-            builder.AppendLine($"Заспавновано всего: {spawner.TotalSpawnedCount}");
-            builder.AppendLine($"Создано новых объектов: {spawner.CreatedCount}");
-            builder.AppendLine($"Активно объектов: {spawner.ActiveCount}");
-            builder.AppendLine();
+            AppendSpawnerStats(builder, spawner);
         }
 
         _statsText.text = builder.ToString();
